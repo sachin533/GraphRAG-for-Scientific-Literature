@@ -1,0 +1,13 @@
+# App runtime (Streamlit Cloud + local UI). Cloud-safe: CPU torch, no build-only deps.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.0.0
+streamlit>=1.30.0
+neo4j>=5.15.0
+numpy>=1.26.0
+sentence-transformers>=2.2.2
+networkx>=3.2.0
+pyvis>=0.3.2
+python-dotenv>=1.0.0
+requests>=2.31.0
+openai>=1.10.0
+groq>=0.4.0

@@ -124,3 +124,48 @@ streamlit run app.py
 - SciSpacy model is large; the `en_core_web_sm` fallback extracts fewer biomedical entities.
 - Evaluation needs a populated Neo4j + an LLM key; otherwise retrieval-only metrics still run.
 - No internet search: answers use only retrieved abstracts by design.
+
+## 22. Deploy online (Streamlit Community Cloud)
+
+Local Docker Neo4j is not reachable from the cloud, so use **Neo4j AuraDB** (free tier)
+as the database and populate it from your machine.
+
+**A. Push to GitHub** (never commit `.env` — it's gitignored):
+
+```powershell
+git init; git add -A; git commit -m "GraphRAG for scientific literature"
+# create an empty repo on github.com, then:
+git remote add origin https://github.com/<you>/<repo>.git
+git push -u origin main
+```
+
+**B. Create free AuraDB**: https://console.neo4j.io → New Instance (Free) → save URI
+(`neo4j+s://xxxx.databases.neo4j.io`), user `neo4j`, password, database `neo4j`.
+
+**C. Populate Aura from your machine** (one time; full build takes a while):
+
+```powershell
+# in .env point NEO4J_URI/USER/PASSWORD at Aura, then:
+py scripts/build_graph.py --strategy semantic --clear
+```
+
+**D. Deploy**: https://share.streamlit.io → New app → pick repo/branch/`app.py`.
+Python version 3.12, requirements come from root `requirements.txt` (slim,
+Cloud-safe; heavy ingest deps live in `requirements-ingest.txt` and are not
+installed on Cloud — the Cloud app only does retrieval + generation, which needs
+no spaCy/datasets).
+
+**E. Secrets** (App → Settings → Secrets on Streamlit Cloud):
+
+```toml
+NEO4J_URI = "neo4j+s://xxxx.databases.neo4j.io"
+NEO4J_USER = "neo4j"
+NEO4J_PASSWORD = "<aura-password>"
+NEO4J_DATABASE = "neo4j"
+GROQ_API_KEY = "<key>"   # or OPENAI_API_KEY
+TOP_K = "5"
+```
+
+The app reads `st.secrets` first, env vars as fallback (`src/config.py`), so the
+same code runs locally and on Cloud. GDS PageRank is usually unavailable on Aura
+Free — the re-ranker automatically falls back to local NetworkX.

@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/
+data/raw/
+data/chunks/*.jsonl
+*.log
+.streamlit/secrets.toml
+evaluation/results/*.json
+evaluation/results/*.csv
+ evaluation/comparison_10_questions.csv
